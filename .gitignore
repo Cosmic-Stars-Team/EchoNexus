@@ -45,5 +45,7 @@
 # Local vcpkg clone/cache (if used in-repo)
 .vcpkg/
 .idea/
+.vs/
+.vscode/
 
 build/
