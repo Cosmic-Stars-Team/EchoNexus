@@ -9,7 +9,6 @@
     {
       "name": "base",
       "hidden": true,
-      "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
@@ -19,7 +18,9 @@
       "name": "debug",
       "displayName": "Debug Config",
       "inherits": "base",
+      "generator": "Ninja",
       "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_BUILD_TYPE": "Debug"
       }
     },
@@ -27,19 +28,51 @@
       "name": "release",
       "displayName": "Release Config",
       "inherits": "base",
+      "generator": "Ninja",
       "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "msvc-release",
+      "displayName": "MSVC Release",
+      "description": "Configure using Visual Studio 17 2022 and MSVC in Release mode",
+      "generator": "Visual Studio 17 2022",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "msvc-debug",
+      "displayName": "MSVC Debug",
+      "description": "Configure using Visual Studio 17 2022 and MSVC in Debug mode",
+      "generator": "Visual Studio 17 2022",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "debug",
+      "name": "build-release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "build-debug",
       "configurePreset": "debug"
     },
     {
-      "name": "release",
-      "configurePreset": "release"
+      "name": "build-msvc-release",
+      "configurePreset": "msvc-release"
+    },
+    {
+      "name": "build-msvc-debug",
+      "configurePreset": "msvc-debug"
     }
   ]
 }
