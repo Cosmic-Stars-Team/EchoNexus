@@ -14,7 +14,6 @@
 #include "response.hpp"
 
 namespace echo::type {
-
     using boost::asio::awaitable;
 
     /// @brief The handler that manages middleware and request handling.
@@ -56,7 +55,11 @@ namespace echo::type {
         /// @param req The shared request object to forward to the middleware.
         /// @param index The index of the middleware to invoke.
         /// @return An awaitable yielding the response produced by the chain.
-        static awaitable<response> dispatch(std::shared_ptr<state> st, std::shared_ptr<request> req, size_t index) {
+        static awaitable<response> dispatch(
+            std::shared_ptr<state> st,
+            std::shared_ptr<request> req,
+            size_t index
+        ) {
             if (index >= st->chain.size()) {
                 if (st->fallback_ != nullptr) co_return co_await st->fallback_(req, std::nullopt);
 
@@ -67,7 +70,6 @@ namespace echo::type {
 
             if (middleware == nullptr) co_return co_await dispatch(st, req, index + 1);
 
-
             const next_fn_t next = [st, index](std::shared_ptr<request> next_req) -> awaitable<response> {
                 co_return co_await dispatch(st, next_req, index + 1);
             };
@@ -77,8 +79,8 @@ namespace echo::type {
 
     public:
         /// @brief Default constructor.
-        handler() = default;
-        handler(const handler& other) = delete;
+        handler()                                = default;
+        handler(const handler& other)            = delete;
         handler& operator=(const handler& other) = delete;
 
         /// @brief Add a handler function to the chain.
@@ -86,16 +88,22 @@ namespace echo::type {
         /// The provided handler is appended to the end of the middleware chain.
         ///
         /// @param h The handler function to add to the chain.
-        void use(handler_t h) {
+        void use(
+            handler_t h
+        ) {
             state_->chain.push_back(std::move(h));
         }
 
         /// @brief Add all handlers from another handler's chain to this handler.
         ///
-        /// The handlers from the provided handler are appended to the end of this handler's chain.
+        /// The handlers from the provided handler are appended to the end of this
+        /// handler's chain.
         ///
-        /// @param h The handler whose chain of middleware functions should be added to this handler.
-        void use(const handler& h) {
+        /// @param h The handler whose chain of middleware functions should be added
+        /// to this handler.
+        void use(
+            const handler& h
+        ) {
             for (const auto& middleware : h.state_->chain) {
                 state_->chain.push_back(middleware);
             }
@@ -107,7 +115,9 @@ namespace echo::type {
         /// including the case where no middleware is registered.
         ///
         /// @param h The handler function to set as the fallback.
-        void fallback(handler_t h) {
+        void fallback(
+            handler_t h
+        ) {
             state_->fallback_ = std::move(h);
         }
 
@@ -118,7 +128,9 @@ namespace echo::type {
         ///
         /// @param req The shared request object to handle.
         /// @return An awaitable that yields the response.
-        awaitable<response> handle(std::shared_ptr<request> req) {
+        awaitable<response> handle(
+            std::shared_ptr<request> req
+        ) {
             if (state_->chain.empty()) {
                 if (state_->fallback_ != nullptr) co_return co_await state_->fallback_(req, std::nullopt);
 
@@ -128,6 +140,6 @@ namespace echo::type {
             co_return co_await dispatch(state_, req, 0);
         }
     };
-}
+} // namespace echo::type
 
-#endif //ECHONEXUS_HANDLER_HPP
+#endif // ECHONEXUS_HANDLER_HPP

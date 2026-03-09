@@ -19,6 +19,6 @@ namespace echo {
         /// @param req - The incoming HTTP request to be processed.
         boost::asio::awaitable<type::response> handle(std::shared_ptr<type::request> req);
     };
-}
+} // namespace echo
 
 #endif // ECHONEXUS_LIBRARY_H

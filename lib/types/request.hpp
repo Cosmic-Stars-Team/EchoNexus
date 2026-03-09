@@ -7,6 +7,6 @@
 
 namespace echo::type {
     struct request {};
-}
+} // namespace echo::type
 
-#endif //ECHONEXUS_REQUEST_HPP
+#endif // ECHONEXUS_REQUEST_HPP

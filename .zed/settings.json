@@ -8,9 +8,15 @@
           "--clang-tidy",
           "--header-insertion=iwyu",
           "--completion-style=detailed",
-          "--function-arg-placeholders"
-        ]
-      }
-    }
-  }
+          "--function-arg-placeholders",
+        ],
+      },
+    },
+  },
+  "format_on_save": "on",
+  "languages": {
+    "C++": {
+      "format_on_save": "on",
+    },
+  },
 }
