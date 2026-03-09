@@ -1,6 +1,6 @@
 #include <handler.hpp>
 
-namespace echo::type {
+namespace echo {
     awaitable<response> handler::dispatch(
         std::shared_ptr<state> st,
         std::shared_ptr<request> req,
@@ -54,4 +54,4 @@ namespace echo::type {
 
         co_return co_await dispatch(state_, req, 0);
     }
-} // namespace echo::type
+} // namespace echo

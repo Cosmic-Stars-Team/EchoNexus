@@ -12,8 +12,9 @@
 #include <types/request.hpp>
 #include <types/response.hpp>
 
-namespace echo::type {
+namespace echo {
     using boost::asio::awaitable;
+    using namespace type;
 
     /// @brief The type of the "next" function passed to middleware.
     ///
@@ -93,6 +94,6 @@ namespace echo::type {
         /// @return An awaitable that yields the response.
         awaitable<response> handle(std::shared_ptr<request> req);
     };
-} // namespace echo::type
+} // namespace echo
 
 #endif // ECHONEXUS_HANDLER_HPP
