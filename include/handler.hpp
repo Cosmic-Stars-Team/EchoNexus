@@ -1,5 +1,5 @@
-#ifndef ECHONEXUS_TYPES_HANDLER_HPP
-#define ECHONEXUS_TYPES_HANDLER_HPP
+#ifndef ECHONEXUS_HANDLER_HPP
+#define ECHONEXUS_HANDLER_HPP
 
 #include <cstddef>
 #include <functional>
@@ -9,8 +9,8 @@
 
 #include <boost/asio/awaitable.hpp>
 
-#include "request.hpp"
-#include "response.hpp"
+#include <types/request.hpp>
+#include <types/response.hpp>
 
 namespace echo::type {
     using boost::asio::awaitable;
@@ -56,7 +56,7 @@ namespace echo::type {
 
     public:
         /// @brief Default constructor.
-        handler()                                = default;
+        explicit handler()                       = default;
         handler(const handler& other)            = delete;
         handler& operator=(const handler& other) = delete;
 
@@ -95,4 +95,4 @@ namespace echo::type {
     };
 } // namespace echo::type
 
-#endif // ECHONEXUS_TYPES_HANDLER_HPP
+#endif // ECHONEXUS_HANDLER_HPP
