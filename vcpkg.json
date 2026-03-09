@@ -1,5 +1,5 @@
 {
   "name": "echo-nexus",
   "version-string": "0.0.0",
-  "dependencies": ["boost", "glaze"]
+  "dependencies": ["boost-asio", "boost-system", "boost-beast", "glaze"]
 }
