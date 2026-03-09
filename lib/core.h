@@ -2,6 +2,7 @@
 #define ECHONEXUS_LIBRARY_H
 
 #include "types/handler.hpp"
+#include <boost/asio/awaitable.hpp>
 
 namespace echo {
     /// @brief EchoNexus initializes the server and orchestrates incoming HTTP request processing.
@@ -16,7 +17,7 @@ namespace echo {
         /// @brief The handle function of EchoNexus
         ///
         /// @param req - The incoming HTTP request to be processed.
-        void handle(type::request &req);
+        boost::asio::awaitable<type::response> handle(std::shared_ptr<type::request> req);
     };
 }
 
