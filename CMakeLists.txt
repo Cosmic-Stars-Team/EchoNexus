@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.25)
 
 # Get vcpkg toolchain setup if not already provided
 set(ECHONEXUS_IS_TOP_LEVEL OFF)
@@ -12,7 +12,7 @@ option(
     ON
 )
 
-set(ECHONEXUS_LOCAL_VCPKG_DIR "${CMAKE_SOURCE_DIR}/.vcpkg")
+set(ECHONEXUS_LOCAL_VCPKG_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.vcpkg")
 set(
     ECHONEXUS_LOCAL_VCPKG_TOOLCHAIN
     "${ECHONEXUS_LOCAL_VCPKG_DIR}/scripts/buildsystems/vcpkg.cmake"
@@ -110,19 +110,11 @@ elseif(ECHONEXUS_IS_TOP_LEVEL)
     )
 endif()
 
-project(EchoNexus LANGUAGES CXX)
+project(EchoNexus VERSION 0.0.0 LANGUAGES CXX)
 
 option(ECHONEXUS_DISABLE_BEAST "Disable Boost.Beast dependency" OFF)
 option(ECHONEXUS_WARNINGS_AS_ERRORS "Treat warnings as errors" ON)
 option(ECHONEXUS_BUILD_EXAMPLES "Build examples" ${PROJECT_IS_TOP_LEVEL})
-
-# EchoNexus library sources
-set(LIB_SOURCES
-        lib/core.cpp
-        lib/types/handler.hpp
-        lib/types/request.hpp
-        lib/types/response.hpp
-)
 
 # Find libraries
 set(BOOST_COMPS asio system)
@@ -135,7 +127,28 @@ find_package(Boost REQUIRED CONFIG COMPONENTS ${BOOST_COMPS})
 find_package(glaze REQUIRED CONFIG)
 
 # Define EchoNexus library
-add_library(EchoNexus ${LIB_SOURCES})
+add_library(EchoNexus)
+add_library(EchoNexus::EchoNexus ALIAS EchoNexus)
+
+file(GLOB_RECURSE ECHONEXUS_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cxx"
+)
+
+target_sources(EchoNexus
+    PRIVATE
+        ${ECHONEXUS_SOURCES}
+)
+
+target_include_directories(EchoNexus
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
 target_compile_features(EchoNexus PUBLIC cxx_std_23)
 
@@ -198,7 +211,26 @@ target_compile_options(EchoNexus PRIVATE
     >
 )
 
-target_include_directories(EchoNexus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+include(GNUInstallDirs)
+
+install(
+    TARGETS EchoNexus
+    EXPORT EchoNexusTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(
+    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(
+    EXPORT EchoNexusTargets
+    NAMESPACE EchoNexus::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/EchoNexus
+)
 
 if(ECHONEXUS_BUILD_EXAMPLES)
     add_subdirectory(example)

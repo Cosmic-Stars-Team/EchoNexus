@@ -1,11 +1,10 @@
-#ifndef ECHONEXUS_HANDLER_HPP
-#define ECHONEXUS_HANDLER_HPP
+#ifndef ECHONEXUS_TYPES_HANDLER_HPP
+#define ECHONEXUS_TYPES_HANDLER_HPP
 
 #include <cstddef>
 #include <functional>
 #include <memory>
 #include <optional>
-#include <utility>
 #include <vector>
 
 #include <boost/asio/awaitable.hpp>
@@ -15,9 +14,6 @@
 
 namespace echo::type {
     using boost::asio::awaitable;
-
-    /// @brief The handler that manages middleware and request handling.
-    class handler;
 
     /// @brief The type of the "next" function passed to middleware.
     ///
@@ -33,6 +29,7 @@ namespace echo::type {
     /// The handler returns an awaitable yielding a response.
     using handler_t = std::function<awaitable<response>(std::shared_ptr<request>, std::optional<next_fn_t>)>;
 
+    /// @brief The handler that manages middleware and request handling.
     class handler {
     private:
         struct state {
@@ -55,27 +52,7 @@ namespace echo::type {
         /// @param req The shared request object to forward to the middleware.
         /// @param index The index of the middleware to invoke.
         /// @return An awaitable yielding the response produced by the chain.
-        static awaitable<response> dispatch(
-            std::shared_ptr<state> st,
-            std::shared_ptr<request> req,
-            size_t index
-        ) {
-            if (index >= st->chain.size()) {
-                if (st->fallback_ != nullptr) co_return co_await st->fallback_(req, std::nullopt);
-
-                co_return response();
-            }
-
-            const auto& middleware = st->chain[index];
-
-            if (middleware == nullptr) co_return co_await dispatch(st, req, index + 1);
-
-            const next_fn_t next = [st, index](std::shared_ptr<request> next_req) -> awaitable<response> {
-                co_return co_await dispatch(st, next_req, index + 1);
-            };
-
-            co_return co_await middleware(req, next);
-        }
+        static awaitable<response> dispatch(std::shared_ptr<state> st, std::shared_ptr<request> req, size_t index);
 
     public:
         /// @brief Default constructor.
@@ -88,11 +65,7 @@ namespace echo::type {
         /// The provided handler is appended to the end of the middleware chain.
         ///
         /// @param h The handler function to add to the chain.
-        void use(
-            handler_t h
-        ) {
-            state_->chain.push_back(std::move(h));
-        }
+        void use(handler_t h);
 
         /// @brief Add all handlers from another handler's chain to this handler.
         ///
@@ -101,13 +74,7 @@ namespace echo::type {
         ///
         /// @param h The handler whose chain of middleware functions should be added
         /// to this handler.
-        void use(
-            const handler& h
-        ) {
-            for (const auto& middleware : h.state_->chain) {
-                state_->chain.push_back(middleware);
-            }
-        }
+        void use(const handler& h);
 
         /// @brief Set the fallback handler.
         ///
@@ -115,11 +82,7 @@ namespace echo::type {
         /// including the case where no middleware is registered.
         ///
         /// @param h The handler function to set as the fallback.
-        void fallback(
-            handler_t h
-        ) {
-            state_->fallback_ = std::move(h);
-        }
+        void fallback(handler_t h);
 
         /// @brief Handle an incoming request by running the middleware chain.
         ///
@@ -128,18 +91,8 @@ namespace echo::type {
         ///
         /// @param req The shared request object to handle.
         /// @return An awaitable that yields the response.
-        awaitable<response> handle(
-            std::shared_ptr<request> req
-        ) {
-            if (state_->chain.empty()) {
-                if (state_->fallback_ != nullptr) co_return co_await state_->fallback_(req, std::nullopt);
-
-                co_return response();
-            }
-
-            co_return co_await dispatch(state_, req, 0);
-        }
+        awaitable<response> handle(std::shared_ptr<request> req);
     };
 } // namespace echo::type
 
-#endif // ECHONEXUS_HANDLER_HPP
+#endif // ECHONEXUS_TYPES_HANDLER_HPP

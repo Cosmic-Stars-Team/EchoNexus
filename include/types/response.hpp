@@ -1,9 +1,10 @@
-#ifndef ECHONEXUS_RESPONSE_HPP
-#define ECHONEXUS_RESPONSE_HPP
+#ifndef ECHONEXUS_TYPES_RESPONSE_HPP
+#define ECHONEXUS_TYPES_RESPONSE_HPP
 
 #include <map>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #include <glaze/glaze.hpp>
 
@@ -270,4 +271,4 @@ namespace echo::type {
     };
 } // namespace echo::type
 
-#endif // ECHONEXUS_RESPONSE_HPP
+#endif // ECHONEXUS_TYPES_RESPONSE_HPP
