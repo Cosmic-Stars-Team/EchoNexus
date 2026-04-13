@@ -18,7 +18,7 @@ namespace echo {
         out.reason(res.message);
         out.body() = res.body;
 
-        for (const auto& [key, value] : res.headers) {
+        for (const auto& [key, value] : res.get_headers()) {
             out.set(key, value);
         }
 

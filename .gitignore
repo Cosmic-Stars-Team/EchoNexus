@@ -49,3 +49,4 @@
 .vscode/
 
 build/
+.worktrees/
