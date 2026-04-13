@@ -1,6 +1,8 @@
 #ifndef ECHONEXUS_TYPES_RESPONSE_HPP
 #define ECHONEXUS_TYPES_RESPONSE_HPP
 
+#include <algorithm>
+#include <cctype>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -161,8 +163,6 @@ namespace echo::type {
         std::string message = "OK";
         /// @brief The body of the response.
         std::string body = "";
-        /// @brief Custom headers for the response.
-        map_t headers;
 
         response() = default;
         response(
@@ -184,6 +184,24 @@ namespace echo::type {
             });
 
             headers[lowered_key] = value;
+        }
+
+        [[nodiscard]] const std::string* get_header(
+            std::string_view key
+        ) const {
+            std::string lowered_key(key);
+            std::transform(lowered_key.begin(), lowered_key.end(), lowered_key.begin(), [](const unsigned char ch) {
+                return static_cast<char>(std::tolower(ch));
+            });
+
+            const auto it = headers.find(lowered_key);
+            if (it == headers.end()) return nullptr;
+
+            return &it->second;
+        }
+
+        [[nodiscard]] const map_t& get_headers() const {
+            return headers;
         }
 
         /// @brief Set the body of the response and update Content-Length header.
@@ -272,6 +290,10 @@ namespace echo::type {
 
             return res;
         }
+
+    private:
+        /// @brief Custom headers for the response.
+        map_t headers;
     };
 } // namespace echo::type
 

@@ -306,9 +306,9 @@ auto echo::middlewares::cors::handle(
         if (!origin_wildcard_response) {
             std::vector<std::string> tokens;
 
-            if (const auto existing = response.headers.find("Vary"); existing != response.headers.end()) {
+            if (const auto existing = response.get_header("Vary"); existing != nullptr) {
                 std::string buffer;
-                for (char ch : existing->second) {
+                for (char ch : *existing) {
                     if (ch == ',') {
                         size_t start = 0;
                         while (start < buffer.size() && std::isspace(static_cast<unsigned char>(buffer[start]))) {
@@ -345,6 +345,10 @@ auto echo::middlewares::cors::handle(
             }
 
             const std::string token = "Origin";
+            std::string lowered_token(token);
+            std::transform(lowered_token.begin(), lowered_token.end(), lowered_token.begin(), [](const unsigned char ch) {
+                return static_cast<char>(std::tolower(ch));
+            });
             bool found_token        = false;
             for (const auto& existing_token : tokens) {
                 if (existing_token.size() != token.size()) {
@@ -353,8 +357,8 @@ auto echo::middlewares::cors::handle(
 
                 bool equal = true;
                 for (size_t index = 0; index < token.size(); ++index) {
-                    if (std::tolower(static_cast<unsigned char>(existing_token[index])) !=
-                        std::tolower(static_cast<unsigned char>(token[index]))) {
+                    if (static_cast<char>(std::tolower(static_cast<unsigned char>(existing_token[index]))) !=
+                        lowered_token[index]) {
                         equal = false;
                         break;
                     }
@@ -565,9 +569,9 @@ auto echo::middlewares::cors::handle(
     {
         std::vector<std::string> tokens;
 
-        if (const auto existing = response.headers.find("Vary"); existing != response.headers.end()) {
+        if (const auto existing = response.get_header("Vary"); existing != nullptr) {
             std::string buffer;
-            for (char ch : existing->second) {
+            for (char ch : *existing) {
                 if (ch == ',') {
                     size_t start = 0;
                     while (start < buffer.size() && std::isspace(static_cast<unsigned char>(buffer[start]))) {
@@ -607,6 +611,10 @@ auto echo::middlewares::cors::handle(
              {std::string("Origin"),
               std::string("Access-Control-Request-Method"),
               std::string("Access-Control-Request-Headers")}) {
+            std::string lowered_token(token);
+            std::transform(lowered_token.begin(), lowered_token.end(), lowered_token.begin(), [](const unsigned char ch) {
+                return static_cast<char>(std::tolower(ch));
+            });
             bool found = false;
             for (const auto& existing_token : tokens) {
                 if (existing_token.size() != token.size()) {
@@ -615,8 +623,8 @@ auto echo::middlewares::cors::handle(
 
                 bool equal = true;
                 for (size_t index = 0; index < token.size(); ++index) {
-                    if (std::tolower(static_cast<unsigned char>(existing_token[index])) !=
-                        std::tolower(static_cast<unsigned char>(token[index]))) {
+                    if (static_cast<char>(std::tolower(static_cast<unsigned char>(existing_token[index]))) !=
+                        lowered_token[index]) {
                         equal = false;
                         break;
                     }
