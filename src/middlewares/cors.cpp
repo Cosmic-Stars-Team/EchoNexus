@@ -246,7 +246,10 @@ auto echo::middlewares::cors::handle(
     const auto request_origin = req->get_header("Origin");
     const auto request_method_header = req->get_header("Access-Control-Request-Method");
     const auto request_headers_header = req->get_header("Access-Control-Request-Headers");
-    const bool is_preflight = req->method == "OPTIONS" && request_origin && request_method_header;
+    const bool is_preflight = req->method == "OPTIONS"
+        && request_origin
+        && request_method_header
+        && !request_method_header->empty();
 
     echo::type::response response;
     if (is_preflight) {

@@ -34,7 +34,7 @@ namespace echo {
         std::shared_ptr<layer> layer
     ) {
         state_->chain.push_back(
-            [&layer](std::shared_ptr<request> req, std::optional<next_fn_t> next) -> awaitable<response> {
+            [layer](std::shared_ptr<request> req, std::optional<next_fn_t> next) -> awaitable<response> {
                 return layer->handle(req, next);
             }
         );
