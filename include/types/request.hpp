@@ -1,7 +1,10 @@
 #ifndef ECHONEXUS_TYPES_REQUEST_HPP
 #define ECHONEXUS_TYPES_REQUEST_HPP
 
+#include <algorithm>
 #include <any>
+#include <cctype>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <string_view>
@@ -44,10 +47,30 @@ namespace echo::type {
         [[nodiscard]] const std::string* get_header(
             std::string_view key
         ) const {
-            const auto it = headers.find(std::string(key));
-            if (it == headers.end()) return nullptr;
+            std::string key_str(key);
+            const auto exact_it = headers.find(key_str);
+            if (exact_it != headers.end()) return &exact_it->second;
 
-            return &it->second;
+            std::string lowered_key(key_str);
+            std::transform(lowered_key.begin(), lowered_key.end(), lowered_key.begin(), [](const unsigned char ch) {
+                return static_cast<char>(std::tolower(ch));
+            });
+
+            for (const auto& [header_key, header_value] : headers) {
+                if (header_key.size() != lowered_key.size()) continue;
+
+                bool equal = true;
+                for (std::size_t index = 0; index < header_key.size(); ++index) {
+                    if (static_cast<char>(std::tolower(static_cast<unsigned char>(header_key[index]))) != lowered_key[index]) {
+                        equal = false;
+                        break;
+                    }
+                }
+
+                if (equal) return &header_value;
+            }
+
+            return nullptr;
         }
 
         template <typename T>
