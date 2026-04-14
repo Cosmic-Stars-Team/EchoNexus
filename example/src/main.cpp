@@ -1,3 +1,5 @@
+#include <middlewares/logger.hpp>
+#include <middlewares/router.hpp>
 #include <serve.hpp>
 
 #include <exception>
@@ -16,32 +18,47 @@ int main() {
 
     echo::nexus app(std::make_unique<echo::beast_executor>());
 
-    app.use(
-        [](std::shared_ptr<echo::type::request> req,
-           std::optional<echo::next_fn_t> next) -> echo::awaitable<echo::type::response> {
-            echo::type::response res(200);
-            req->set_ctx("test-context", "Hello, EchoNexus");
-            if (next) {
-                res = co_await next.value()(req);
-            }
-            co_return res;
-        }
-    );
+    auto root = std::make_shared<echo::middlewares::router>();
+    echo::middlewares::router api;
+    echo::middlewares::router v1;
 
-    app.fallback(
-        [](std::shared_ptr<echo::type::request> req,
-           std::optional<echo::next_fn_t> _next) -> echo::awaitable<echo::type::response> {
-            echo::type::response res(200);
-            res.set_content_type("text/plain; charset=utf-8");
-            const auto content = req->get_ctx<const char*>(std::string_view("test-context"));
-            if (content) {
-                res.set_body(*content);
-            } else {
-                res.set_body("Hello, World!");
-            }
-            co_return res;
+    root->use(echo::middlewares::logger);
+
+    v1.get(
+          "/user",
+          [](std::shared_ptr<echo::type::request> req, std::optional<echo::next_fn_t>)
+              -> echo::awaitable<echo::type::response> {
+              const auto* scope = req->get_ctx<std::string>("scope");
+              const std::string scope_value = scope == nullptr ? "missing" : *scope;
+              co_return echo::type::response::json(std::string(R"({"scope":")") + scope_value + R"("})", 200);
+          }
+      )
+        .layer([](std::shared_ptr<echo::type::request> req, std::optional<echo::next_fn_t> next)
+                   -> echo::awaitable<echo::type::response> {
+            req->set_ctx("scope", std::string("v1-user"));
+            co_return co_await next.value()(req);
+        });
+
+    api.get(
+        "/",
+        [](std::shared_ptr<echo::type::request>, std::optional<echo::next_fn_t>) -> echo::awaitable<echo::type::response> {
+            co_return echo::type::response::text("api root", 200);
         }
     );
+    api.nest("/v1", v1);
+
+    root->get(
+        "/",
+        [](std::shared_ptr<echo::type::request>, std::optional<echo::next_fn_t>) -> echo::awaitable<echo::type::response> {
+            co_return echo::type::response::text("EchoNexus", 200);
+        }
+    );
+    root->nest("/api", api);
+
+    app.use(root);
+    app.fallback([](std::shared_ptr<echo::type::request> req, std::optional<echo::next_fn_t>) -> echo::awaitable<echo::type::response> {
+        co_return echo::type::response::text(std::string("No route for ") + req->path, 404);
+    });
 
     constexpr std::uint16_t port = 9000;
     std::println("EchoNexus example listening on http://127.0.0.1:{}", port);

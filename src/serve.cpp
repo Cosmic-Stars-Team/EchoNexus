@@ -178,6 +178,12 @@ namespace echo {
     }
 
     void nexus::use(
+        std::shared_ptr<layer> layer
+    ) {
+        handler_->use(std::move(layer));
+    }
+
+    void nexus::use(
         const handler& h
     ) {
         handler_->use(h);

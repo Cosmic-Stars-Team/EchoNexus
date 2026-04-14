@@ -63,6 +63,7 @@ namespace echo {
         explicit nexus(std::unique_ptr<executor> exec);
 
         void use(const handler_t h);
+        void use(std::shared_ptr<layer> layer);
         void use(const handler& h);
         void fallback(const handler_t h);
 
