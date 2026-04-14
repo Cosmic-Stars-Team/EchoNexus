@@ -5,20 +5,22 @@ namespace echo {
     awaitable<response> handler::dispatch(
         std::shared_ptr<state> st,
         std::shared_ptr<request> req,
-        size_t index
+        size_t index,
+        std::optional<next_fn_t> tail
     ) {
         if (index >= st->chain.size()) {
-            if (st->fallback_ != nullptr) co_return co_await st->fallback_(req, std::nullopt);
+            if (st->fallback_ != nullptr) co_return co_await st->fallback_(req, tail);
+            if (tail.has_value()) co_return co_await tail.value()(req);
 
             co_return response();
         }
 
         const auto& middleware = st->chain[index];
 
-        if (middleware == nullptr) co_return co_await dispatch(st, req, index + 1);
+        if (middleware == nullptr) co_return co_await dispatch(st, req, index + 1, tail);
 
-        const next_fn_t next = [st, index](std::shared_ptr<request> next_req) -> awaitable<response> {
-            co_return co_await dispatch(st, next_req, index + 1);
+        const next_fn_t next = [st, index, tail](std::shared_ptr<request> next_req) -> awaitable<response> {
+            co_return co_await dispatch(st, next_req, index + 1, tail);
         };
 
         co_return co_await middleware(req, next);
@@ -43,9 +45,12 @@ namespace echo {
     void handler::use(
         const handler& h
     ) {
-        for (const auto& middleware : h.state_->chain) {
-            state_->chain.push_back(middleware);
-        }
+        const auto child_state = h.state_;
+        state_->chain.push_back(
+            [child_state](std::shared_ptr<request> req, std::optional<next_fn_t> next) -> awaitable<response> {
+                co_return co_await dispatch(child_state, req, 0, next);
+            }
+        );
     }
 
     void handler::fallback(
@@ -57,12 +62,13 @@ namespace echo {
     awaitable<response> handler::handle(
         std::shared_ptr<request> req
     ) {
-        if (state_->chain.empty()) {
-            if (state_->fallback_ != nullptr) co_return co_await state_->fallback_(req, std::nullopt);
+        co_return co_await handle_with_tail(req, std::nullopt);
+    }
 
-            co_return response();
-        }
-
-        co_return co_await dispatch(state_, req, 0);
+    awaitable<response> handler::handle_with_tail(
+        std::shared_ptr<request> req,
+        std::optional<next_fn_t> tail
+    ) {
+        co_return co_await dispatch(state_, req, 0, tail);
     }
 } // namespace echo

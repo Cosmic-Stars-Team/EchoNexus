@@ -63,7 +63,12 @@ namespace echo {
         /// @param req The shared request object to forward to the middleware.
         /// @param index The index of the middleware to invoke.
         /// @return An awaitable yielding the response produced by the chain.
-        static awaitable<response> dispatch(std::shared_ptr<state> st, std::shared_ptr<request> req, size_t index);
+        static awaitable<response> dispatch(
+            std::shared_ptr<state> st,
+            std::shared_ptr<request> req,
+            size_t index,
+            std::optional<next_fn_t> tail
+        );
 
     public:
         /// @brief Default constructor.
@@ -85,13 +90,13 @@ namespace echo {
         /// @param layer The layer to add to the chain.
         void use(std::shared_ptr<layer> layer);
 
-        /// @brief Add all handlers from another handler's chain to this handler.
+        /// @brief Compose another handler into this handler's chain.
         ///
-        /// The handlers from the provided handler are appended to the end of this
-        /// handler's chain.
+        /// The provided handler is wrapped as a single middleware step so its
+        /// internal chain and fallback semantics are preserved when the composed
+        /// handler runs.
         ///
-        /// @param h The handler whose chain of middleware functions should be added
-        /// to this handler.
+        /// @param h The handler to compose into this handler.
         void use(const handler& h);
 
         /// @brief Set the fallback handler.
@@ -110,6 +115,17 @@ namespace echo {
         /// @param req The shared request object to handle.
         /// @return An awaitable that yields the response.
         awaitable<response> handle(std::shared_ptr<request> req);
+
+        /// @brief Handle an incoming request and continue into an outer tail when the
+        /// current handler chain is exhausted.
+        ///
+        /// This allows composed handlers such as routers to reuse the core handler
+        /// execution model while preserving local fallback behavior.
+        ///
+        /// @param req The shared request object to handle.
+        /// @param tail The outer continuation to invoke after this handler finishes.
+        /// @return An awaitable that yields the response.
+        awaitable<response> handle_with_tail(std::shared_ptr<request> req, std::optional<next_fn_t> tail);
     };
 } // namespace echo
 
