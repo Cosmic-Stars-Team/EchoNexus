@@ -46,21 +46,33 @@ struct echo::middlewares::router::mounted_child : echo::layer {
         const std::optional<std::string> saved_prefix =
             parent_prefix_ptr == nullptr ? std::nullopt : std::optional<std::string>(*parent_prefix_ptr);
 
-        req->set_ctx(std::string(router::prefix_ctx_key), effective_prefix);
-
-        auto restore_prefix = [&req, &saved_prefix]() {
+        auto apply_saved_prefix = [saved_prefix](const std::shared_ptr<echo::type::request>& target_req) {
             if (saved_prefix.has_value()) {
-                req->set_ctx(std::string(router::prefix_ctx_key), saved_prefix.value());
+                target_req->set_ctx(std::string(router::prefix_ctx_key), saved_prefix.value());
             } else {
-                req->context.erase(std::string(router::prefix_ctx_key));
+                target_req->context.erase(std::string(router::prefix_ctx_key));
             }
         };
+        auto restore_prefix = [&req, &apply_saved_prefix]() { apply_saved_prefix(req); };
+
+        req->set_ctx(std::string(router::prefix_ctx_key), effective_prefix);
+
+        std::optional<echo::next_fn_t> child_next = std::nullopt;
+        if (next.has_value()) {
+            const auto parent_next = next.value();
+            child_next             = [parent_next, apply_saved_prefix](
+                             std::shared_ptr<echo::type::request> next_req
+                         ) -> echo::awaitable<echo::type::response> {
+                apply_saved_prefix(next_req);
+                co_return co_await parent_next(next_req);
+            };
+        }
 
         router child_view;
         child_view.state_ = child_state;
 
         try {
-            echo::type::response res = co_await child_view.handle(req, std::nullopt);
+            echo::type::response res = co_await child_view.handle(req, std::move(child_next));
             restore_prefix();
             co_return res;
         } catch (...) {
@@ -329,6 +341,13 @@ auto echo::middlewares::router::use(
     const handler& h
 ) -> router& {
     state_->pipeline.use(h);
+    return *this;
+}
+
+auto echo::middlewares::router::fallback(
+    handler_t h
+) -> router& {
+    state_->miss_fallback = std::move(h);
     return *this;
 }
 
@@ -628,6 +647,7 @@ auto echo::middlewares::router::route_tail_for(
         }
 
         if (bucket == nullptr) {
+            if (st->miss_fallback != nullptr) co_return co_await st->miss_fallback(req, outer_next);
             if (outer_next.has_value()) co_return co_await outer_next.value()(req);
             co_return type::response(404);
         }
