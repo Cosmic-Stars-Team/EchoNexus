@@ -65,6 +65,7 @@ namespace echo::middlewares {
         auto use(handler_t h) -> router&;
         auto use(std::shared_ptr<echo::layer> layer) -> router&;
         auto use(const handler& h) -> router&;
+        auto fallback(handler_t h) -> router&;
         auto nest(std::string prefix, const router& child) -> router&;
 
         auto handle(std::shared_ptr<echo::type::request> req, std::optional<echo::next_fn_t> next)
@@ -110,6 +111,7 @@ namespace echo::middlewares {
             handler pipeline;
             std::unordered_map<std::string, route_bucket> routes;
             std::vector<dynamic_route> dynamic_routes;
+            handler_t miss_fallback = nullptr;
         };
 
         friend struct mounted_child;

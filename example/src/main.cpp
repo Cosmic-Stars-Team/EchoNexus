@@ -36,6 +36,17 @@ namespace api {
         co_return echo::type::response::json(data);
     }
 
+    auto not_found(
+        echo::type::request_ptr req,
+        std::optional<echo::next_fn_t>
+    ) -> echo::awaitable<echo::type::response> {
+        std::unordered_map<std::string, std::string> data = {
+            {"code", "404"},
+            {"message", "Not Found"},
+        };
+        co_return echo::type::response::json(data, 404);
+    }
+
     namespace v1 {
         auto user(
             echo::type::request_ptr req,
@@ -67,7 +78,7 @@ namespace api {
             co_return echo::type::response::json(data);
         }
 
-        auto with_scope(
+        auto with_scope_layout(
             echo::type::request_ptr req,
             std::optional<echo::next_fn_t> next
         ) -> echo::awaitable<echo::type::response> {
@@ -97,12 +108,13 @@ auto main(
     {
         echo::middlewares::router v1;
         {
-            v1.get("/user/{uid}", api::v1::user).layer(api::v1::with_scope);
+            v1.get("/user/{uid}", api::v1::user).layer(api::v1::with_scope_layout);
             v1.get("/user/{uid}/info", api::v1::user_info);
         };
 
-        api.get("/info", api::info);
         api.nest("/v1", v1);
+        api.get("/info", api::info);
+        api.fallback(api::not_found);
     };
 
     root.get("/", [](echo::type::request_ptr, std::optional<echo::next_fn_t>) -> echo::awaitable<echo::type::response> {
