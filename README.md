@@ -9,6 +9,7 @@ EchoNexus is a lightweight HTTP framework for modern C++23.
 - A C++23-capable compiler
 - CMake 3.25 or newer
 - Git, if you want EchoNexus to bootstrap a local `vcpkg` checkout automatically
+- [`Just`](https://just.systems) — a command runner used for the common workflows below
 
 When EchoNexus is configured as the top-level project, it can reuse `VCPKG_ROOT`, an explicit `CMAKE_TOOLCHAIN_FILE`, or clone and bootstrap `vcpkg` into `.vcpkg/` for you.
 
@@ -18,13 +19,22 @@ When EchoNexus is configured as the top-level project, it can reuse `VCPKG_ROOT`
 git clone https://github.com/Cosmic-Stars-Team/EchoNexus.git
 cd EchoNexus
 
-cmake -S . -B build/debug -DCMAKE_BUILD_TYPE=Debug
-cmake --build build/debug --target example
-
-./build/debug/example/example
+just run
 ```
 
 Once the example is running, open `http://127.0.0.1:9000` in your browser.
+
+> **Windows users**: MSVC is supported via [`just`](https://just.systems) (requires installing `just` first).
+> Open a **Developer Command Prompt for VS** and run:
+>
+> ```cmd
+> cd EchoNexus
+> just build          # configure + build (debug)
+> just test           # run tests
+> just run            # build & run the example
+> ```
+>
+> Use `just build --release` for a release build.
 
 You can also try a few routes directly:
 
