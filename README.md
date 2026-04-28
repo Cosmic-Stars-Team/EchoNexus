@@ -30,6 +30,7 @@ Once the example is running, open `http://127.0.0.1:9000` in your browser.
 > ```cmd
 > cd EchoNexus
 > just build          # configure + build (debug)
+> just clean          # remove CMake caches and build artifacts
 > just test           # run tests
 > just run            # build & run the example
 > ```
@@ -39,6 +40,7 @@ Once the example is running, open `http://127.0.0.1:9000` in your browser.
 ### Run tests
 
 ```bash
+just clean             # remove CMake caches and build artifacts
 just test              # run the full test suite
 just test unit         # run only unit tests
 just test integration  # run only integration tests
