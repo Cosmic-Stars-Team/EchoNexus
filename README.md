@@ -42,9 +42,12 @@ Once the example is running, open `http://127.0.0.1:9000` in your browser.
 just test              # run the full test suite
 just test unit         # run only unit tests
 just test integration  # run only integration tests
+just test --export ./test-results.xml
+just test integration --export ./integration-results.xml
 ```
 
 Add `--release` if you want to run the release build instead of the default debug build.
+Use `--export <path>` to write JUnit XML for the current `ctest` run.
 
 You can also try a few routes directly:
 

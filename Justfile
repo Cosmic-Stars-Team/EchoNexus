@@ -17,10 +17,11 @@ build compiler="" release="" debug_flag="": (configure compiler release debug_fl
 
 [arg("compiler", long="compiler", help="C++ compiler command or path")]
 [arg("debug_flag", long="debug", value="debug", help="Use the debug profile (default)")]
+[arg("export_path", long="export", help="Write JUnit XML test results to the given path")]
 [arg("release", long="release", value="release", help="Use the release profile")]
-test label="" compiler="" release="" debug_flag="": (build compiler release debug_flag)
+test label="" compiler="" export_path="" release="" debug_flag="": (build compiler release debug_flag)
     @: {{ if release != "" { if debug_flag != "" { error("`--debug` and `--release` are mutually exclusive") } else { "" } } else { "" } }}
-    {{ if compiler != "" { "ctest --test-dir build/" + replace(replace(replace(replace(replace(compiler, "/", "_"), "\\", "_"), " ", "_"), "+", "x"), ":", "_") + "-" + (if release != "" { "release" } else { "debug" }) + " --output-on-failure" + (if label != "" { " -L " + label } else { "" }) } else if release != "" { "ctest --test-dir build/release --output-on-failure" + (if label != "" { " -L " + label } else { "" }) } else { "ctest --test-dir build/debug --output-on-failure" + (if label != "" { " -L " + label } else { "" }) } }}
+    {{ if compiler != "" { "ctest --test-dir build/" + replace(replace(replace(replace(replace(compiler, "/", "_"), "\\", "_"), " ", "_"), "+", "x"), ":", "_") + "-" + (if release != "" { "release" } else { "debug" }) + " --output-on-failure" + (if label != "" { " -L " + label } else { "" }) + (if export_path != "" { " --output-junit \"" + export_path + "\"" } else { "" }) } else if release != "" { "ctest --test-dir build/release --output-on-failure" + (if label != "" { " -L " + label } else { "" }) + (if export_path != "" { " --output-junit \"" + export_path + "\"" } else { "" }) } else { "ctest --test-dir build/debug --output-on-failure" + (if label != "" { " -L " + label } else { "" }) + (if export_path != "" { " --output-junit \"" + export_path + "\"" } else { "" }) } }}
 
 [arg("compiler", long="compiler", help="C++ compiler command or path")]
 [arg("debug_flag", long="debug", value="debug", help="Use the debug profile (default)")]
