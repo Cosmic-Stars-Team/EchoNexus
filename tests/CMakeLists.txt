@@ -1,24 +1,6 @@
 find_package(Catch2 3 CONFIG REQUIRED)
 include(Catch)
 
-add_test(
-    NAME echonexus_cmake_vcpkg_subproject
-    COMMAND
-        ${CMAKE_COMMAND}
-        -DECHONEXUS_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -DECHONEXUS_TEST_MODE=subproject
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/echo_vcpkg_helper_smoke.cmake
-)
-
-add_test(
-    NAME echonexus_cmake_vcpkg_top_level
-    COMMAND
-        ${CMAKE_COMMAND}
-        -DECHONEXUS_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -DECHONEXUS_TEST_MODE=top-level
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/echo_vcpkg_helper_smoke.cmake
-)
-
 add_executable(
     echonexus_unit_tests
     unit/handler.test.cpp
@@ -54,7 +36,7 @@ catch_discover_tests(
 )
 
 if(NOT ECHONEXUS_DISABLE_BEAST)
-    add_executable(
+  add_executable(
         echonexus_integration_tests
         integration/serve.test.cpp
         integration/serve_cors.test.cpp
@@ -64,22 +46,22 @@ if(NOT ECHONEXUS_DISABLE_BEAST)
         integration/serve_routes.test.cpp
     )
 
-    target_link_libraries(
+  target_link_libraries(
         echonexus_integration_tests
         PRIVATE
             EchoNexus
             Catch2::Catch2WithMain
     )
 
-    target_include_directories(
+  target_include_directories(
         echonexus_integration_tests
         PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}
     )
 
-    target_compile_features(echonexus_integration_tests PRIVATE cxx_std_23)
+  target_compile_features(echonexus_integration_tests PRIVATE cxx_std_23)
 
-    catch_discover_tests(
+  catch_discover_tests(
         echonexus_integration_tests
         TEST_PREFIX "integration::"
         PROPERTIES

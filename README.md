@@ -51,6 +51,8 @@ just test integration --export ./integration-results.xml
 
 Add `--release` if you want to run the release build instead of the default debug build.
 Use `--export <path>` to write JUnit XML for the current `ctest` run.
+Use `--compiler <cxx>` with either command to select a toolchain explicitly, for example `just build --compiler /usr/bin/clang++ --release` or `just test unit --compiler g++-15`.
+When `--compiler` is set, EchoNexus derives the matching C compiler and forwards both `CC` and `CXX` via `cmake -E env`, so CMake and `vcpkg` stay on the same toolchain. Supported compiler basenames are `cc`, `c++`, `g++*`, `clang++*`, `cl`, and `clang-cl`; the generic `cc` / `c++` pair is resolved to sibling drivers automatically.
 
 ### Run benchmarks
 
