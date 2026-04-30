@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.25)
 # Top-level builds can choose or bootstrap a vcpkg toolchain before project().
 set(ECHONEXUS_IS_TOP_LEVEL OFF)
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(ECHONEXUS_IS_TOP_LEVEL ON)
+  set(ECHONEXUS_IS_TOP_LEVEL ON)
 endif()
 
 option(
@@ -12,9 +12,9 @@ option(
     ON
 )
 if(ECHONEXUS_IS_TOP_LEVEL)
-    set(ECHONEXUS_VCPKG_PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
-    set(ECHONEXUS_VCPKG_IS_TOP_LEVEL ON)
-    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/EchoNexusVcpkg.cmake")
+  set(ECHONEXUS_VCPKG_PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+  set(ECHONEXUS_VCPKG_IS_TOP_LEVEL ON)
+  include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/EchoNexusVcpkg.cmake")
 endif()
 
 project(EchoNexus VERSION 0.0.0 LANGUAGES CXX)
@@ -28,7 +28,7 @@ option(ECHONEXUS_BUILD_TESTS "Build tests" ${PROJECT_IS_TOP_LEVEL})
 set(BOOST_COMPS asio system)
 
 if(NOT ECHONEXUS_DISABLE_BEAST)
-    list(APPEND BOOST_COMPS beast)
+  list(APPEND BOOST_COMPS beast)
 endif()
 
 find_package(Boost REQUIRED CONFIG COMPONENTS ${BOOST_COMPS})
@@ -65,14 +65,14 @@ target_link_libraries(EchoNexus PUBLIC Boost::asio)
 target_link_libraries(EchoNexus PUBLIC glaze::glaze)
 
 if(ECHONEXUS_DISABLE_BEAST)
-    message(STATUS "Build: Boost.Beast is DISABLED")
-    target_compile_definitions(EchoNexus PUBLIC DISABLE_BOOST_BEAST)
+  message(STATUS "Build: Boost.Beast is DISABLED")
+  target_compile_definitions(EchoNexus PUBLIC DISABLE_BOOST_BEAST)
 else()
-    if(TARGET Boost::beast)
-        target_link_libraries(EchoNexus PUBLIC Boost::beast)
-    else()
-        target_link_libraries(EchoNexus PUBLIC Boost::headers)
-    endif()
+  if(TARGET Boost::beast)
+    target_link_libraries(EchoNexus PUBLIC Boost::beast)
+  else()
+    target_link_libraries(EchoNexus PUBLIC Boost::headers)
+  endif()
 endif()
 
 target_compile_options(EchoNexus PRIVATE
@@ -85,6 +85,7 @@ target_compile_options(EchoNexus PRIVATE
         /permissive-
         /Zc:__cplusplus
     >
+
     # ============================================
     # For Unix-like Compiler (GCC/Clang/AppleClang)
     # ============================================
@@ -93,7 +94,7 @@ target_compile_options(EchoNexus PRIVATE
         -Wextra
         -Wpedantic
         -Wconversion
-        -Wshadow
+        -Wshadow=local
     >
     $<$<CXX_COMPILER_ID:Clang>:
         -Wall
@@ -141,10 +142,10 @@ install(
 )
 
 if(ECHONEXUS_BUILD_EXAMPLES)
-    add_subdirectory(example)
+  add_subdirectory(example)
 endif()
 
 if(ECHONEXUS_BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
+  enable_testing()
+  add_subdirectory(tests)
 endif()
