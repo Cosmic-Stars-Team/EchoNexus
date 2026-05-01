@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { FRAMEWORKS } from "../configs/frameworks";
 import { buildCases, WORKLOAD_PATHS } from "./cases";
 import { waitForHealth } from "./health";
-import { buildOhaCommand, parseOhaOutput } from "./load";
+import { buildOhaCommand, ensureOhaOutputDirectory, parseOhaOutput } from "./load";
 import { parseOptions } from "./options";
 import { buildFrameworkSkipResults, commandExists, preflightFrameworks } from "./preflight";
 import { writeReportFiles } from "./report";
@@ -254,6 +254,10 @@ async function runOhaAndParse(options: {
   outputFormat: "json" | "quiet";
   outputPath?: string;
 }): Promise<LoadMetrics | null> {
+  if (options.outputPath !== undefined) {
+    await ensureOhaOutputDirectory(options.outputPath);
+  }
+
   await runCommand({
     description: `Run oha against ${options.url}`,
     cmd: buildOhaCommand(options),

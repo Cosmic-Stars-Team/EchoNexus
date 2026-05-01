@@ -1,3 +1,6 @@
+import { mkdir } from "node:fs/promises";
+import { dirname } from "node:path";
+
 import type { LoadMetrics } from "./types";
 
 interface OhaLikeSummary {
@@ -49,6 +52,10 @@ export function buildOhaCommand(options: OhaCommandOptions): string[] {
 
   command.push(options.url);
   return command;
+}
+
+export async function ensureOhaOutputDirectory(outputPath: string): Promise<void> {
+  await mkdir(dirname(outputPath), { recursive: true });
 }
 
 function toNullableNumber(value: number | null | undefined): number | null {

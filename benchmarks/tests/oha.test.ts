@@ -1,10 +1,13 @@
 import { describe, expect, test } from "bun:test";
+import { mkdtemp, stat } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import { parseOhaOutput } from "../src/load";
+import * as load from "../src/load";
 
 describe("parseOhaOutput", () => {
   test("normalizes oha json summary into benchmark metrics", () => {
-    const metrics = parseOhaOutput({
+    const metrics = load.parseOhaOutput({
       summary: {
         successRate: 0.9875,
         total: 30.4,
@@ -81,7 +84,7 @@ describe("parseOhaOutput", () => {
   });
 
   test("derives success throughput from success rate when requests per second are present", () => {
-    const metrics = parseOhaOutput({
+    const metrics = load.parseOhaOutput({
       summary: {
         requestsPerSec: 1234.5,
         successRate: 0.8,
@@ -94,7 +97,7 @@ describe("parseOhaOutput", () => {
   });
 
   test("preserves missing oha metrics as null instead of fake zeroes", () => {
-    const metrics = parseOhaOutput({
+    const metrics = load.parseOhaOutput({
       summary: {
         total: 12.3,
       },
@@ -113,7 +116,7 @@ describe("parseOhaOutput", () => {
   });
 
   test("preserves explicit null values from oha json instead of deriving fake numbers", () => {
-    const metrics = parseOhaOutput({
+    const metrics = load.parseOhaOutput({
       summary: {
         requestsPerSec: 4321.25,
         successRate: null,
@@ -133,5 +136,25 @@ describe("parseOhaOutput", () => {
     expect(metrics.p99Ms).toBeNull();
     expect(metrics.maxMs).toBeNull();
     expect(metrics.errorRate).toBeNull();
+  });
+});
+
+describe("ensureOhaOutputDirectory", () => {
+  test("creates the parent directory for oha json output files", async () => {
+    const root = await mkdtemp(join(tmpdir(), "oha-output-"));
+    const outputPath = join(root, "results", "raw-case.json");
+
+    expect(typeof (load as { ensureOhaOutputDirectory?: unknown }).ensureOhaOutputDirectory).toBe(
+      "function",
+    );
+
+    await (
+      load as {
+        ensureOhaOutputDirectory: (path: string) => Promise<void>;
+      }
+    ).ensureOhaOutputDirectory(outputPath);
+
+    const info = await stat(join(root, "results"));
+    expect(info.isDirectory()).toBe(true);
   });
 });
