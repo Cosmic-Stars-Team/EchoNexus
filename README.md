@@ -29,7 +29,7 @@ Once the example is running, open `http://127.0.0.1:9000` in your browser.
 >
 > ```cmd
 > cd EchoNexus
-> just build          # configure + build (debug)
+> just build          # build the library + example (debug)
 > just clean          # remove CMake caches and build artifacts
 > just test           # run tests
 > just run            # build & run the example
@@ -41,6 +41,7 @@ Once the example is running, open `http://127.0.0.1:9000` in your browser.
 
 ```bash
 just clean             # remove CMake caches and build artifacts
+just build             # build the library + example
 just test              # run the full test suite
 just test unit         # run only unit tests
 just test integration  # run only integration tests
@@ -50,6 +51,8 @@ just test integration --export ./integration-results.xml
 
 Add `--release` if you want to run the release build instead of the default debug build.
 Use `--export <path>` to write JUnit XML for the current `ctest` run.
+Use `--compiler <cxx>` with either command to select a toolchain explicitly, for example `just build --compiler /usr/bin/clang++ --release` or `just test unit --compiler g++-15`.
+When `--compiler` is set, EchoNexus derives the matching C compiler and forwards both `CC` and `CXX` via `cmake -E env`, so CMake and `vcpkg` stay on the same toolchain. Supported compiler basenames are `cc`, `c++`, `g++*`, `clang++*`, `cl`, and `clang-cl`; the generic `cc` / `c++` pair is resolved to sibling drivers automatically.
 
 ### Run benchmarks
 
@@ -134,6 +137,7 @@ These are intended to cover common cases without hiding the underlying request f
 - Setting `ECHONEXUS_DISABLE_BEAST=ON` removes the built-in Beast-backed executor. In that mode, the library can still be used with a custom executor, but the bundled example server is not available.
 - `ECHONEXUS_WARNINGS_AS_ERRORS` is enabled by default.
 - `ECHONEXUS_BUILD_EXAMPLES` is enabled automatically when EchoNexus is the top-level project.
+- `ECHONEXUS_BUILD_TESTS` is disabled by default. Enable it with `-DECHONEXUS_BUILD_TESTS=ON` when you want to build the test targets manually.
 - `ECHONEXUS_AUTO_SETUP_VCPKG` only applies when EchoNexus is configured as the top-level project.
 
 ## Project Layout

@@ -54,9 +54,11 @@ namespace echo {
         in->body         = req.body();
         in->http_version = static_cast<std::uint16_t>(req.version());
 
-        const auto [path, query] = utils::parse_target(req.target());
-        in->path                 = path;
-        in->query                = query;
+        // GCC 16 can misfire `-Wmaybe-uninitialized` here at `-O3` when this
+        // return value is consumed through a structured binding.
+        auto parsed_target = utils::parse_target(req.target());
+        in->path           = std::move(parsed_target.first);
+        in->query          = std::move(parsed_target.second);
 
         for (const auto& field : req) {
             in->headers[std::string(field.name_string())] = std::string(field.value());
