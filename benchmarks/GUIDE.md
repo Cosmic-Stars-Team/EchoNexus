@@ -87,7 +87,7 @@ If `--output-tag nightly` is provided, filenames become `...--nightly.json` and 
 ## Workloads
 
 - `plaintext`: the lightest text response path
-- `json`: framework-native JSON serialization from an object, not a prebuilt EchoNexus JSON string
+- `json`: serialize a native object to JSON using each framework's JSON support (no hand-crafted response strings)
 - `time_json`: per-request local time generation plus JSON serialization
 - `param_json_middleware`: path params, middleware dispatch, request-local state, and JSON serialization together
 
@@ -110,11 +110,11 @@ Routes exposed by every benchmark app:
 
 Middleware alignment rule:
 
-- every framework runs a global middleware or filter for every request
-- it only sets `scope=user` when the path starts with `/api/v1/users/`
-- non-matching routes still pay the middleware dispatch cost
+- every framework runs a global middleware or filter on every request
+- this middleware sets a `scope=user` attribute when the path starts with `/api/v1/users/`, and does nothing otherwise
+- all requests go through this middleware — even those that don't match — so the dispatch overhead is always included
 
-Unsupported worker combinations are marked `skipped`. They are never silently downgraded into a different runtime shape.
+Unsupported worker combinations are marked `skipped`. They are never silently run with a different worker count.
 
 Example: Elysia `workers=4` on macOS is skipped in this suite because Bun shared-port multi-process mode is Linux-only here.
 
@@ -126,7 +126,7 @@ Important fields:
 
 - `Status`: `passed`, `skipped`, or `failed`
 - `QPS`: raw request throughput
-- `Success QPS`: `QPS * (1 - errorRate)` when `oha` provides the needed fields
+- `Success QPS`: `QPS * (1 - errorRate)`, computed when `oha` reports both total requests and error count
 - `Err %`: request error ratio
 - `Execution Model`: descriptive runtime architecture, not a fairness claim
 
@@ -140,7 +140,7 @@ Each session also records:
 - OS, kernel, CPU, memory, hostname
 - runtime and compiler versions actually observed on the host
 
-If resource sampling is unavailable on the current host, RSS and CPU fields become `-` and the reason is written into `Notes`.
+If resource sampling is unavailable on the current host, RSS (resident set size) and CPU fields become `-` and the reason is written into `Notes`.
 
 ## Required Toolchains
 
@@ -164,11 +164,9 @@ Spring Boot notes:
 
 - the runner uses `./gradlew` automatically when it exists
 - if no wrapper is present, it falls back to `gradle`
-- if `BENCHMARK_JAVA_HOME` is set, Spring Boot uses that JDK
 
 Go notes:
 
-- if `BENCHMARK_GO` is set, Gin uses that `go` binary
 - on macOS, the runner also checks common Homebrew Go install paths before failing
 
 ## Setup
@@ -199,11 +197,6 @@ cmake --build --preset build-release --target echonexus_benchmark
 For debug builds, use the corresponding `debug` and `build-debug` presets.
 
 At startup, the runner preflights the selected frameworks. If a framework-specific SDK or command is missing, that framework is marked `skipped` immediately and the runner avoids spending setup time on it.
-
-Resolution order for external toolchains:
-
-- Go: `BENCHMARK_GO`, then `GOROOT/bin/go`, then common platform paths, then `PATH`
-- Spring Boot Java: `BENCHMARK_JAVA_HOME`, then `JAVA_HOME`, then common platform paths, then `PATH`
 
 ## Platform Notes
 
