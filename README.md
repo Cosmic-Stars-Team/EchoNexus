@@ -9,7 +9,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-BSD%203--Clause-blue.svg" alt="License"></a> &nbsp;
   <a href="#"><img src="https://img.shields.io/badge/C%2B%2B-23-%2300599C.svg" alt="C++ Standard"></a> &nbsp;
-  <a href="#"><img src="https://img.shields.io/badge/status-pre--release-orange.svg" alt="Status"></a> &nbsp;
+  <a href="#"><img src="https://img.shields.io/badge/status-alpha-orange.svg" alt="Status"></a> &nbsp;
   <a href="https://github.com/Cosmic-Stars-Team/EchoNexus"><img src="https://img.shields.io/github/stars/Cosmic-Stars-Team/EchoNexus?style=social" alt="GitHub Stars"></a>
 </p>
 
@@ -18,6 +18,12 @@
 EchoNexus is a coroutine-first HTTP framework written in C++23. It's built on Boost.Beast and designed to be fast, light on resources, and straightforward to use — no code generation, no magic annotations, just plain C++ that does what you'd expect.
 
 If you've used Express, Koa, or Axum before, the middleware-and-router model should feel familiar. Handlers are coroutines; middleware is just a handler that can choose to call the next one (or not). The whole thing compiles down to a single native binary that sips memory.
+
+> [!WARNING]
+>
+> EchoNexus is still in alpha stage. The API may change without notice.
+>
+> Currently only supports HTTP/1 text-based requests & responses. Streaming, multipart, and WebSocket will be supported in future versions.
 
 ---
 
