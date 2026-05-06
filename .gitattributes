@@ -1,0 +1,4 @@
+* text=lf
+
+tests/** linguist-generated=true
+benchmarks/** linguist-generated=true
